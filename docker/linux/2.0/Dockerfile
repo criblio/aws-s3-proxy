@@ -3,8 +3,9 @@
 
 FROM golang:1.23.2-alpine3.20 AS builder
 RUN apk --no-cache add gcc musl-dev git
-RUN go get -u github.com/criblio/aws-s3-proxy
-WORKDIR /go/src/github.com/criblio/aws-s3-proxy
+#RUN go get -u github.com/criblio/aws-s3-proxy
+WORKDIR /go/src/
+COPY . /go/src/
 ENV APP_VERSION=v2.0.0
 RUN git checkout "${APP_VERSION}" > /dev/null 2>&1
 RUN go mod download
