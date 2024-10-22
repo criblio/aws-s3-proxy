@@ -6,12 +6,19 @@ RUN apk --no-cache add gcc musl-dev git
 #RUN go get -u github.com/criblio/aws-s3-proxy
 WORKDIR /go/src/
 COPY . /go/src/
-RUN go mod download
-RUN go mod verify \\
-    && today=$(date +%Y-%m-%d --utc) \
-    && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-    -ldflags '-s -w -X main.ver=${APP_VERSION} -X main.commit=${githash} -X main.date=${today}' \
-    -o /app
+ARG BUILD_VERSION
+ARG BUILD_DATE
+ARG BUILD_REF
+ARG BUILD_GOARCH
+ARG BUILD_GOOS
+RUN go mod download \
+ && go mod verify \
+ && CGO_ENABLED=0 go build \
+    -ldflags '-s -w -X main.ver=${BUILD_VERSION} \
+    -X main.commit=${BUILD_REF} -X main.date=${BUILD_DATE}' \
+ && CGO_ENABLED=0 go build \
+    -ldflags '-s -w -X main.ver=${BUILD_VERSION} \
+    -X main.commit=${BUILD_REF} -X main.date=${BUILD_DATE}' -o /app
 
 FROM alpine:3.11 AS libs
 RUN apk --no-cache add ca-certificates
